@@ -6,7 +6,7 @@ export function regionalStatus(state){
   const clearedThreats=battles.filter(b=>b.resolved&&b.victory).length;
   const survivingForces=battles.filter(b=>b.resolved).reduce((sum,b)=>sum+Math.max(0,b.playerForces),0);
   const safetyScore=Math.min(100,18+clearedThreats*24+Math.min(10,Math.floor(survivingForces/8)));
-  const tier=safetyScore>=72?'secured':safetyScore>=42?'contested':'fractured';
+  const tier=safetyScore>=80?'secured':safetyScore>=42?'contested':'fractured';
   const roadsSecured=broken.resolved&&broken.victory&&grey.resolved&&grey.victory;
   const summary=tier==='secured'
     ?'Ashfall March is locally secured. Trade and civilian movement can resume under guard.'
