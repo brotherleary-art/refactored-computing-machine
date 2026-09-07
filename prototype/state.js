@@ -5,7 +5,8 @@ export const defaultState=()=>({
   progress:18,power:18,completedUpgrades:[],discovered:['home'],ruinExposed:false,
   lastScoutReport:'',heroFocus:'Mara Keln',
   relics:[],
-  expedition:{started:false,supplies:3,danger:18,progress:0,resonance:0,completed:false,log:[]}
+  expedition:{started:false,supplies:3,danger:18,progress:0,resonance:0,completed:false,log:[]},
+  battle:{unlocked:false,resolved:false,victory:false,rewardClaimed:false,playerForces:46,enemyForces:26,log:[]}
 });
 
 export function loadState(){
@@ -14,7 +15,7 @@ export function loadState(){
     if(!raw)return defaultState();
     const parsed=JSON.parse(raw);
     const fresh=defaultState();
-    return {...fresh,...parsed,expedition:{...fresh.expedition,...(parsed.expedition||{})}};
+    return {...fresh,...parsed,expedition:{...fresh.expedition,...(parsed.expedition||{})},battle:{...fresh.battle,...(parsed.battle||{})}};
   }catch{return defaultState()}
 }
 
@@ -76,11 +77,29 @@ export function resolveRuinChoice(state,choice){
 
   if(expedition.progress>=100){
     expedition.completed=true;
+    state.battle.unlocked=true;
     if(!state.relics.includes('Meridian Lens')){
       state.relics.push('Meridian Lens');state.iron+=25;state.stone+=40;state.power+=5;
     }
     expedition.log.push('A dormant mechanism answers. For one heartbeat, another world appears beyond the chamber.');
+    expedition.log.push('Then something wakes between the expedition and the exit.');
   }
   saveState(state);
-  return {changed:true,message:expedition.completed?'The Buried Meridian is breached. The Meridian Lens has been recovered.':`Progress ${expedition.progress}%. Danger ${expedition.danger}. Supplies ${expedition.supplies}.`};
+  return {changed:true,message:expedition.completed?'The Buried Meridian is breached. A guardian blocks the return route.':`Progress ${expedition.progress}%. Danger ${expedition.danger}. Supplies ${expedition.supplies}.`};
+}
+
+export function resolveGuardianBattle(state){
+  if(!state.battle.unlocked||state.battle.resolved)return {changed:false,message:'No unresolved guardian encounter.'};
+  const h=heroStats[state.heroFocus]||heroStats['Mara Keln'];
+  const playerScore=state.battle.playerForces*2+state.power+h.command*5+h.engineering*2;
+  const enemyScore=state.battle.enemyForces*2+38;
+  const victory=playerScore>=enemyScore;
+  state.battle.resolved=true;state.battle.victory=victory;
+  state.battle.playerForces=Math.max(1,Math.round(state.battle.playerForces*(victory?.82:.58)));
+  state.battle.enemyForces=Math.max(0,Math.round(state.battle.enemyForces*(victory?.35:.74)));
+  state.battle.log.push(`${state.heroFocus} leads Ashfall's force against the Meridian Guardian.`);
+  state.battle.log.push(victory?'The guardian fractures and the route home opens.':'The expedition is forced back under heavy pressure.');
+  if(victory&&!state.battle.rewardClaimed){state.battle.rewardClaimed=true;state.iron+=20;state.food+=35;state.power+=4;state.relics.push('Guardian Shard')}
+  saveState(state);
+  return {changed:true,message:victory?'Victory. Guardian Shard recovered.':'Defeat. The party survives, but the guardian still controls the threshold.'};
 }
