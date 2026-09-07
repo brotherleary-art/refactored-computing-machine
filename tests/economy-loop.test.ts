@@ -4,7 +4,7 @@ import { applyEconomyTick, getStorageCapacity } from '../src/game/economyLoop';
 describe('settlement economy loop', () => {
   it('caps produced resources at storage capacity', () => {
     const result = applyEconomyTick({
-      wallet: { food: 499, timber: 399, stone: 250, clay: 150, iron: 80 },
+      wallet: { food: 499, timber: 399, stone: 250, clay: 150, iron: 80, population: 24 },
       buildings: { farm: 2, lumberCamp: 2, storehouse: 1 },
       lastTickAt: 0,
     }, 60_000);
@@ -16,7 +16,7 @@ describe('settlement economy loop', () => {
 
   it('limits offline catch-up to four hours', () => {
     const start = {
-      wallet: { food: 100, timber: 100, stone: 100, clay: 100, iron: 50 },
+      wallet: { food: 100, timber: 100, stone: 100, clay: 100, iron: 50, population: 24 },
       buildings: { farm: 1 },
       lastTickAt: 0,
     };
