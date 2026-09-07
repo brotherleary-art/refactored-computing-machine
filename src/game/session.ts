@@ -1,7 +1,9 @@
-import type { ResourceKey } from './resources';
+import type { ResourceId } from './resources';
+
+type SessionResourceId = Exclude<ResourceId, 'population'>;
 
 export interface PrototypeSessionState {
-  resources: Record<ResourceKey, number>;
+  resources: Record<SessionResourceId, number>;
   population: number;
   settlementProgress: number;
   power: number;
@@ -53,13 +55,13 @@ export const recordScoutDiscovery = (
   state: PrototypeSessionState,
   locationId: string,
   report: string,
-  reward?: Partial<Record<ResourceKey, number>>,
+  reward?: Partial<Record<SessionResourceId, number>>,
 ): PrototypeSessionState => {
   const alreadyDiscovered = state.discoveredLocationIds.includes(locationId);
   const resources = { ...state.resources };
 
   if (!alreadyDiscovered && reward) {
-    (Object.keys(reward) as ResourceKey[]).forEach((key) => {
+    (Object.keys(reward) as SessionResourceId[]).forEach((key) => {
       resources[key] += reward[key] ?? 0;
     });
   }
