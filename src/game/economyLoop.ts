@@ -9,7 +9,7 @@ export interface EconomySnapshot {
 
 export const MAX_OFFLINE_SECONDS = 4 * 60 * 60;
 
-const BASE_CAPACITY: ResourceWallet = { food: 300, timber: 300, stone: 300, clay: 300, iron: 300 };
+const BASE_CAPACITY: ResourceWallet = { food: 300, timber: 300, stone: 300, clay: 300, iron: 300, population: 100 };
 const STOREHOUSE_CAPACITY_PER_LEVEL = 200;
 
 export const getStorageCapacity = (buildings: Partial<Record<BuildingId, number>>): ResourceWallet => {
@@ -20,6 +20,7 @@ export const getStorageCapacity = (buildings: Partial<Record<BuildingId, number>
     stone: BASE_CAPACITY.stone + bonus,
     clay: BASE_CAPACITY.clay + bonus,
     iron: BASE_CAPACITY.iron + bonus,
+    population: BASE_CAPACITY.population,
   };
 };
 
@@ -29,6 +30,7 @@ export const getProductionPerSecond = (buildings: Partial<Record<BuildingId, num
   stone: (buildings.quarry ?? 0) * 0.45,
   clay: (buildings.clayPit ?? 0) * 0.35,
   iron: (buildings.ironMine ?? 0) * 0.18,
+  population: 0,
 });
 
 export const applyEconomyTick = (state: EconomySnapshot, now = Date.now()): EconomySnapshot => {
