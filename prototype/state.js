@@ -6,7 +6,12 @@ export const defaultState=()=>({
   lastScoutReport:'',heroFocus:'Mara Keln',
   relics:[],
   expedition:{started:false,supplies:3,danger:18,progress:0,resonance:0,completed:false,log:[]},
-  battle:{unlocked:false,resolved:false,victory:false,rewardClaimed:false,playerForces:46,enemyForces:26,log:[]}
+  battle:{unlocked:false,resolved:false,victory:false,rewardClaimed:false,playerForces:46,enemyForces:26,log:[]},
+  worldBattles:{
+    selected:null,
+    'broken-pike-camp':{resolved:false,victory:false,rewardClaimed:false,playerForces:38,enemyForces:19,log:[]},
+    'grey-banner-patrol':{resolved:false,victory:false,rewardClaimed:false,playerForces:38,enemyForces:28,log:[]}
+  }
 });
 
 export function loadState(){
@@ -15,7 +20,17 @@ export function loadState(){
     if(!raw)return defaultState();
     const parsed=JSON.parse(raw);
     const fresh=defaultState();
-    return {...fresh,...parsed,expedition:{...fresh.expedition,...(parsed.expedition||{})},battle:{...fresh.battle,...(parsed.battle||{})}};
+    const parsedWorld=parsed.worldBattles||{};
+    return {
+      ...fresh,...parsed,
+      expedition:{...fresh.expedition,...(parsed.expedition||{})},
+      battle:{...fresh.battle,...(parsed.battle||{})},
+      worldBattles:{
+        ...fresh.worldBattles,...parsedWorld,
+        'broken-pike-camp':{...fresh.worldBattles['broken-pike-camp'],...(parsedWorld['broken-pike-camp']||{})},
+        'grey-banner-patrol':{...fresh.worldBattles['grey-banner-patrol'],...(parsedWorld['grey-banner-patrol']||{})}
+      }
+    };
   }catch{return defaultState()}
 }
 
@@ -102,4 +117,34 @@ export function resolveGuardianBattle(state){
   if(victory&&!state.battle.rewardClaimed){state.battle.rewardClaimed=true;state.iron+=20;state.food+=35;state.power+=4;state.relics.push('Guardian Shard')}
   saveState(state);
   return {changed:true,message:victory?'Victory. Guardian Shard recovered.':'Defeat. The party survives, but the guardian still controls the threshold.'};
+}
+
+const worldBattleDefs={
+  'broken-pike-camp':{name:'Broken Pike Camp',enemy:'Broken Pike Raiders',enemyBase:19,reward:{food:30,timber:20,iron:8,power:2}},
+  'grey-banner-patrol':{name:'Grey Banner Patrol',enemy:'Grey Banner Patrol',enemyBase:28,reward:{food:22,stone:18,iron:12,power:3}}
+};
+
+export function prepareWorldBattle(state,id){
+  if(!worldBattleDefs[id]||!state.discovered.includes(id==='broken-pike-camp'?'enemy-1':'enemy-2'))return false;
+  state.worldBattles.selected=id;saveState(state);return true;
+}
+
+export function resolveWorldBattle(state,id){
+  const def=worldBattleDefs[id],encounter=state.worldBattles[id];
+  if(!def||!encounter||encounter.resolved)return {changed:false,message:'No unresolved field encounter.'};
+  const h=heroStats[state.heroFocus]||heroStats['Mara Keln'];
+  const playerScore=encounter.playerForces*2+state.power+h.command*5+h.scouting*2;
+  const enemyScore=encounter.enemyForces*2+(id==='grey-banner-patrol'?32:20);
+  const victory=playerScore>=enemyScore;
+  encounter.resolved=true;encounter.victory=victory;
+  encounter.playerForces=Math.max(1,Math.round(encounter.playerForces*(victory?.86:.66)));
+  encounter.enemyForces=Math.max(0,Math.round(encounter.enemyForces*(victory?.28:.76)));
+  encounter.log.push(`${state.heroFocus} leads the Ashfall field force against ${def.enemy}.`);
+  encounter.log.push(victory?`${def.name} is cleared and the road is safer.`:`Ashfall's troops withdraw before the field force is destroyed.`);
+  if(victory&&!encounter.rewardClaimed){
+    encounter.rewardClaimed=true;
+    for(const [key,value] of Object.entries(def.reward))state[key]=(state[key]||0)+value;
+  }
+  saveState(state);
+  return {changed:true,message:victory?`Victory at ${def.name}. Supplies recovered.`:`Defeat at ${def.name}. Survivors returned to Ashfall Hold.`};
 }
