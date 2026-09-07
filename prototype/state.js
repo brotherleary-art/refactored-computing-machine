@@ -3,7 +3,7 @@ const STORAGE_KEY='shattered-ages-prototype-v1';
 export const defaultState=()=>({
   food:500,timber:400,stone:250,clay:150,iron:80,population:24,
   progress:18,power:18,completedUpgrades:[],discovered:['home'],ruinExposed:false,
-  lastScoutReport:'',heroFocus:'Mara Vey'
+  lastScoutReport:'',heroFocus:'Mara Keln'
 });
 
 export function loadState(){
