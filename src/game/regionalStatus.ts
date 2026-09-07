@@ -29,7 +29,7 @@ export function calculateRegionalStatus(input: RegionalStatusInput): RegionalSta
     .reduce((total, battle) => total + Math.max(0, battle.playerForces), 0);
 
   const safetyScore = Math.min(100, 18 + clearedThreats * 24 + Math.min(10, Math.floor(survivingForces / 8)));
-  const tier: SafetyTier = safetyScore >= 72 ? 'secured' : safetyScore >= 42 ? 'contested' : 'fractured';
+  const tier: SafetyTier = safetyScore >= 80 ? 'secured' : safetyScore >= 42 ? 'contested' : 'fractured';
   const roadsSecured = input.brokenPike.resolved && input.brokenPike.victory && input.greyBanner.resolved && input.greyBanner.victory;
 
   const summary = tier === 'secured'
