@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Shattered Ages — War Council</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;background:#0b1015;color:#f2e9d8}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#1a2b32,#090d11 62%);min-height:100vh}.shell{max-width:1180px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.eyebrow{letter-spacing:.18em;text-transform:uppercase;color:#c8a86a;font-size:.75rem}h1{margin:.25rem 0;font-size:clamp(2rem,5vw,4.4rem)}.nav a{color:#d8c7a4;text-decoration:none;margin-left:14px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}.stat,.panel,.card{background:rgba(20,29,34,.88);border:1px solid #37464c;border-radius:16px;padding:16px;box-shadow:0 15px 35px #0006}.stat strong{display:block;font-size:1.45rem;color:#f2d395}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.panel h2{margin-top:0}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card h3{margin:.1rem 0 .45rem}.small{font-size:.86rem;color:#aeb8b9}.ok{color:#9fe0a8}.locked{color:#d89e8c}button,input{border:1px solid #665842;background:#171d20;color:#f5ead3;border-radius:10px;padding:10px 12px}button{cursor:pointer;background:#7b5a2f;border-color:#a97f45;font-weight:700}button:disabled{cursor:not-allowed;opacity:.4}.unitrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #2a3438}.log{min-height:90px;background:#090d10;border-radius:10px;padding:12px;color:#b9c7c7}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#26363b;color:#cfdecf;font-size:.75rem}@media(max-width:760px){.grid,.stats,.cards{grid-template-columns:1fr}.nav a{margin:0 10px 0 0}}
+</style>
+</head>
+<body><main class="shell">
+<div class="top"><div><div class="eyebrow">Ashfall Hold • Embers Era</div><h1>War Council</h1><div class="small">Research. Raise troops. Form a pact. Know when war is forbidden.</div></div><nav class="nav"><a href="index.html">Hold</a><a href="world.html">World</a><a href="heroes.html">Heroes</a><a href="campaign.html">Campaign</a></nav></div>
+<section class="stats"><div class="stat">Knowledge<strong id="knowledge">0</strong></div><div class="stat">Food<strong id="food">0</strong></div><div class="stat">Iron<strong id="iron">0</strong></div><div class="stat">Field Force<strong id="force">0</strong></div></section>
+<div class="grid"><section class="panel"><h2>Embers Research</h2><div id="research" class="cards"></div></section><section class="panel"><h2>Raise the Field Force</h2><div id="units"></div></section><section class="panel"><h2>Ashfall Pact</h2><p class="small">The vertical slice now has a real alliance state scaffold. Create one local prototype pact; server membership authority comes later.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="allianceName" maxlength="32" placeholder="Alliance name"><button id="createAlliance">Create Pact</button></div><p id="allianceStatus" class="small"></p></section><section class="panel"><h2>Protected PvP</h2><p><span class="badge">RULESET ACTIVE</span></p><div id="pvpRules" class="small"></div><h3>Event Log</h3><div class="log" id="log">War Council opened.</div></section></div>
+</main><script type="module">
+import{loadState,saveState}from'./state.js';
+const state=loadState();state.knowledge??=150;state.completedResearch??=[];state.trainedUnits??={};state.allianceName??='';
+const research=[
+{id:'field_rotation',name:'Field Rotation',cost:40,req:null,effect:'+10% food production'},
+{id:'charcoal_bloom',name:'Charcoal Bloom',cost:55,req:null,effect:'Efficient ironworking'},
+{id:'trail_marking',name:'Trail Marking',cost:45,req:null,effect:'Faster scouting'},
+{id:'reinforced_masonry',name:'Reinforced Masonry',cost:90,req:'charcoal_bloom',effect:'Stronger regional defense'},
+{id:'field_medicine',name:'Field Medicine',cost:75,req:'field_rotation',effect:'Lower battle casualties'},
+{id:'resonance_notation',name:'Resonance Notation',cost:110,req:'trail_marking',effect:'Deeper ruin insight'}];
+const units=[
+{id:'militia',name:'Ashfall Militia',food:12,iron:0},{id:'archer',name:'Ridge Archer',food:10,iron:2},{id:'spearguard',name:'Spearguard',food:14,iron:4},{id:'scout_rider',name:'Trail Rider',food:18,iron:3},{id:'sapper',name:'Stone Sapper',food:12,iron:6},{id:'warden',name:'Hold Warden',food:20,iron:10}];
+const $=s=>document.querySelector(s);const log=m=>$('#log').textContent=m;
+function render(){
+ $('#knowledge').textContent=state.knowledge;$('#food').textContent=state.food;$('#iron').textContent=state.iron;$('#force').textContent=Object.values(state.trainedUnits).reduce((a,b)=>a+b,0);
+ $('#research').innerHTML=research.map(r=>{const done=state.completedResearch.includes(r.id),ready=!done&&state.knowledge>=r.cost&&(!r.req||state.completedResearch.includes(r.req));return`<article class="card"><h3>${r.name}</h3><div class="small">${r.cost} knowledge • ${r.effect}</div><p class="${done?'ok':ready?'':'locked'}">${done?'Completed':ready?'Available':r.req?'Requires '+research.find(x=>x.id===r.req).name:'Need more knowledge'}</p><button data-research="${r.id}" ${ready?'':'disabled'}>${done?'Researched':'Research'}</button></article>`}).join('');
+ $('#units').innerHTML=units.map(u=>`<div class="unitrow"><div><strong>${u.name}</strong><div class="small">12-person training packet • ${u.food} food + ${u.iron} iron each</div></div><div><span>${state.trainedUnits[u.id]||0}</span> <button data-unit="${u.id}" ${(state.food>=u.food&&state.iron>=u.iron)?'':'disabled'}>+1</button></div></div>`).join('');
+ $('#allianceStatus').textContent=state.allianceName?`Current pact: ${state.allianceName} • Founder seat held by this prototype player.`:'No alliance founded yet.';
+ $('#pvpRules').innerHTML='<p>✓ Settlement shields block attacks.</p><p>✓ Alliance members cannot raid one another.</p><p>✓ Power gaps above 2.5× are blocked.</p><p>✓ Players offline 12+ hours receive long-offline protection.</p>';
+ saveState(state);
+}
+document.addEventListener('click',e=>{const r=e.target.dataset.research;if(r){const n=research.find(x=>x.id===r);if(n&&!state.completedResearch.includes(r)&&state.knowledge>=n.cost&&(!n.req||state.completedResearch.includes(n.req))){state.knowledge-=n.cost;state.completedResearch.push(r);log(`${n.name} completed. ${n.effect}.`);render()}}const u=e.target.dataset.unit;if(u){const n=units.find(x=>x.id===u);if(n&&state.food>=n.food&&state.iron>=n.iron){state.food-=n.food;state.iron-=n.iron;state.trainedUnits[u]=(state.trainedUnits[u]||0)+1;state.power+=1;log(`${n.name} trained. Ashfall's field force grows.`);render()}}});
+$('#createAlliance').onclick=()=>{const name=$('#allianceName').value.trim();if(name.length<3){log('Alliance names need at least three characters.');return}state.allianceName=name;log(`${name} founded. Alliance membership is stored in this run.`);render()};render();
+</script></body></html>
