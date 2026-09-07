@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shattered Ages — Test Checkout</title>
+  <style>
+    body{margin:0;background:#111318;color:#f3ead7;font:16px/1.5 system-ui,sans-serif}main{max-width:900px;margin:auto;padding:28px}.panel{background:#1b2028;border:1px solid #5f5544;border-radius:14px;padding:20px;margin:16px 0}.badge{display:inline-block;padding:5px 9px;border:1px solid #b98b3f;border-radius:999px;color:#ffd98a}.offer{display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px 0;border-bottom:1px solid #333}.offer:last-child{border-bottom:0}button{padding:10px 14px;border-radius:9px;border:1px solid #847052;background:#292f39;color:#f3ead7}button:disabled{opacity:.55}small{color:#b8b2a6}.safe{color:#a8e6a3}@media(max-width:600px){.offer{grid-template-columns:1fr}main{padding:18px}}
+  </style>
+</head>
+<body>
+<main>
+  <p><a href="store.html" style="color:#ffd98a">← Founder Store</a></p>
+  <h1>Test Checkout Safety Console</h1>
+  <p class="badge">TEST MODE ONLY</p>
+  <div class="panel">
+    <h2>Revenue readiness gate</h2>
+    <p class="safe">✓ No live charge path is enabled.</p>
+    <p class="safe">✓ Sessions must originate from configured test-only offers.</p>
+    <p class="safe">✓ Live-provider verification is rejected by the game model.</p>
+  </div>
+  <div class="panel" id="offers"></div>
+  <div class="panel">
+    <strong>Next provider milestone</strong>
+    <p>Connect a real payment provider in sandbox/test mode, receive a verified webhook, then hand the verified event to the entitlement fulfillment engine. Live mode stays blocked until explicitly authorized.</p>
+  </div>
+</main>
+<script>
+const offers=[['Founder Bronze','$9.99'],['Founder Silver','$24.99'],['Founder Gold','$49.99'],['Season Zero Premium','$9.99'],["Explorer's Guild",'$6.99/month']];
+document.getElementById('offers').innerHTML='<h2>Configured test offers</h2>'+offers.map(([name,price])=>`<div class="offer"><div><strong>${name}</strong><br><small>${price} · no combat power</small></div><button disabled>Test provider not connected</button></div>`).join('');
+</script>
+</body>
+</html>
