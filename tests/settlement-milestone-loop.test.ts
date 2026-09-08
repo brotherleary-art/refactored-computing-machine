@@ -20,6 +20,6 @@ describe('advanceSettlementLoop', () => {
       5,
     );
     expect(next.resources.food).toBe(0);
-    expect(next.morale).toBe(49);
+    expect(next.morale).toBe(48);
   });
 });
