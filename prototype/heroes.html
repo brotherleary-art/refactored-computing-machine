@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>The Shattered Ages — Heroes</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;background:#10110f;color:#f4ead7}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#24251f,#0d0e0c 58%);min-height:100vh}.shell{max-width:1050px;margin:auto;padding:16px}.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{color:#f4d39b;text-decoration:none;border:1px solid #6e583c;border-radius:999px;padding:8px 12px}.status{margin:10px 0 16px;opacity:.75}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.hero{border:1px solid #5b4c3b;border-radius:22px;background:#171713;overflow:hidden;box-shadow:0 12px 30px #0007}.banner{padding:16px;background:linear-gradient(135deg,#4e3b29,#25261d)}.banner b{font-size:24px}.role{text-transform:uppercase;letter-spacing:.12em;font-size:11px;opacity:.7}.body{padding:15px}.meters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.pill{border:1px solid #514536;border-radius:999px;padding:6px 9px;font-size:12px}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0}.stat{text-align:center;border:1px solid #40382d;border-radius:12px;padding:8px 4px}.stat small{display:block;opacity:.65}.assign{width:100%;border:0;border-radius:12px;background:#b8c78f;color:#172015;font-weight:800;padding:10px;cursor:pointer}.assign.active{background:#d3a35f;color:#24160d}.note{margin-top:14px;border:1px solid #5b4c3b;border-radius:16px;padding:12px;background:#171713}@media(max-width:760px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(5,minmax(54px,1fr));overflow:auto}}
+</style>
+</head>
+<body><main class="shell">
+<div class="top"><div><div style="opacity:.65">ERA I: EMBERS • COMMAND ROSTER</div><h1 style="margin:3px 0">Heroes of Ashfall Hold</h1></div><div class="nav"><a href="index.html">← Settlement</a><a href="world.html">World Map →</a></div></div>
+<div class="status">Choose one hero as the current field focus. The choice persists across the prototype run.</div>
+<section class="grid" id="grid"></section><div class="note" id="note"></div>
+</main>
+<script type="module">
+import {loadState,saveState} from './state.js';
+let state=loadState();
+const heroes=[
+{id:'sera-vale',name:'Sera Vale',role:'Commander',culture:'Ashfall',loyalty:78,morale:72,stats:[7,3,2,2,1],trait:'Holds the Line: stronger defensive command when settlement morale breaks.'},
+{id:'orin-thess',name:'Orin Thess',role:'Scout',culture:'Solkara',loyalty:64,morale:81,stats:[3,8,4,2,2],trait:'Far Eyes: reduces first-time exploration cost.'},
+{id:'mara-keln',name:'Mara Keln',role:'Engineer',culture:'Karrakh',loyalty:71,morale:69,stats:[2,2,5,9,1],trait:'Stonewise: assigned construction completes faster.'},
+{id:'ilya-ren',name:'Ilya Ren',role:'Scholar',culture:'Myrwood',loyalty:58,morale:76,stats:[1,4,9,3,6],trait:'Quiet Resonance: gains extra progress while studying ancient ruins.'}
+];
+const statNames=['CMD','SCT','KNW','ENG','RES'],grid=document.getElementById('grid'),note=document.getElementById('note');
+function render(){grid.innerHTML='';heroes.forEach(h=>{const card=document.createElement('article');card.className='hero';const active=state.heroFocus===h.name;card.innerHTML=`<div class="banner"><div class="role">${h.culture} • ${h.role}</div><b>${h.name}</b></div><div class="body"><div class="meters"><span class="pill">Loyalty <b>${h.loyalty}</b></span><span class="pill">Morale <b>${h.morale}</b></span></div><div class="stats">${h.stats.map((v,i)=>`<div class="stat"><b>${v}</b><small>${statNames[i]}</small></div>`).join('')}</div><p>${h.trait}</p><button class="assign ${active?'active':''}">${active?'Field Focus':'Assign Focus'}</button></div>`;card.querySelector('button').onclick=()=>{state.heroFocus=h.name;saveState(state);render()};grid.appendChild(card)});note.textContent=`Current field focus: ${state.heroFocus}. This choice is saved with Ashfall Hold's current run.`}
+render();
+</script></body></html>

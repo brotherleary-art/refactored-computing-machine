@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>The Shattered Ages — Runtime Systems</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;background:#0e0b0a;color:#f3ead9}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,#3b2a20 0,#17110e 42%,#090807 100%)}main{max-width:1050px;margin:auto;padding:28px 18px 60px}.eyebrow{letter-spacing:.16em;text-transform:uppercase;color:#d4aa69;font-weight:800;font-size:12px}h1{font-size:clamp(34px,7vw,66px);margin:8px 0 6px}.sub{color:#bcae9d;max-width:720px}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:26px}.card{min-height:220px;border:1px solid #66503e;background:#17120fee;border-radius:20px;padding:16px;box-shadow:0 14px 35px #0008}.n{font-size:12px;color:#d4aa69;font-weight:900}.card h2{font-size:18px;margin:8px 0}.state{display:inline-block;padding:5px 8px;border-radius:999px;background:#28351f;color:#bedd9f;font-size:11px;font-weight:900}.card p{font-size:13px;color:#c5b7a8;line-height:1.45}.links{display:flex;gap:8px;flex-wrap:wrap;margin-top:25px}.links a{color:#1a120c;background:#d3a35f;text-decoration:none;border-radius:999px;padding:9px 13px;font-weight:800}.warning{margin-top:24px;padding:14px;border:1px solid #694b56;border-radius:16px;background:#24171b;color:#e0b9c4}@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.card:last-child{grid-column:1/-1}}@media(max-width:560px){.grid{grid-template-columns:1fr}.card:last-child{grid-column:auto}}
+</style>
+</head>
+<body><main>
+<div class="eyebrow">ERA I · EMBERS · ASHFALL HOLD</div><h1>Live Runtime Systems</h1>
+<p class="sub">A visual reference for the five runtime systems added to the playable vertical-slice branch. Each system is backed by automated verification; this screen is intentionally a status surface rather than a fake production-game screenshot.</p>
+<section class="grid">
+<article class="card"><div class="n">01 · SETTLEMENT</div><h2>Turn Execution</h2><span class="state">VERIFIED</span><p>Food upkeep resolves before staffed production. Storage caps and starvation state are returned in one deterministic turn result.</p></article>
+<article class="card"><div class="n">02 · CONSTRUCTION</div><h2>Cancel & Refund</h2><span class="state">VERIFIED</span><p>Active timed work can be cancelled before completion, with refund value reduced once work passes the halfway mark.</p></article>
+<article class="card"><div class="n">03 · WORLD</div><h2>Expedition Runtime</h2><span class="state">VERIFIED</span><p>Travel advances by elapsed time, consumes supplies, arrives at destination, or becomes stranded when provisions fail.</p></article>
+<article class="card"><div class="n">04 · COMBAT</div><h2>Resume Snapshot</h2><span class="state">VERIFIED</span><p>Unresolved encounters can be snapshotted with revision data, integrity checking, hero IDs, forces, and strict player binding.</p></article>
+<article class="card"><div class="n">05 · COMMERCE</div><h2>Test Recovery</h2><span class="state">TEST ONLY</span><p>Verified test purchase/refund history can rebuild cosmetic entitlements. Live-mode and unverified events are rejected.</p></article>
+</section>
+<div class="links"><a href="index.html">Ashfall Hold</a><a href="world.html">World Map</a><a href="heroes.html">Heroes</a><a href="war-council.html">War Council</a><a href="test-offer-catalog.html">Test Offers</a></div>
+<div class="warning"><b>No live payment path.</b> Commerce remains test-only. This branch is a draft vertical slice and is not merged into production.</div>
+</main></body></html>

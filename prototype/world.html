@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Shattered Ages — Ashfall Region Map</title>
+  <style>
+    :root{font-family:Inter,system-ui,sans-serif;background:#0d0f0d;color:#f4ead7}*{box-sizing:border-box}body{margin:0;background:linear-gradient(#111610,#090b09);min-height:100vh}.shell{max-width:1150px;margin:auto;padding:14px}.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.nav{display:flex;gap:8px;flex-wrap:wrap}.back{color:#f4d39b;text-decoration:none;border:1px solid #6e583c;border-radius:999px;padding:8px 12px}.hero{background:#b8c78f;color:#172015;border-color:#b8c78f}.status{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 10px}.pill{border:1px solid #584a38;border-radius:999px;padding:6px 9px;font-size:12px;background:#151813}.map{position:relative;min-height:680px;border:1px solid #65543f;border-radius:24px;overflow:hidden;background:radial-gradient(circle at 52% 48%,#536246 0 15%,#34452f 16% 31%,#293a30 32% 50%,#1d2d26 51% 68%,#17211d 69%);box-shadow:inset 0 0 100px #0009}.river{position:absolute;left:12%;top:-10%;width:18%;height:120%;border-radius:50%;border-right:20px solid #456d7555;transform:rotate(18deg)}.road{position:absolute;left:45%;top:-15%;width:10%;height:130%;background:#9a7c4a22;transform:rotate(-18deg)}.node{position:absolute;transform:translate(-50%,-50%);border:1px solid #8a714f;background:#171a16e8;border-radius:15px;padding:7px 9px;min-width:92px;text-align:center;font-size:12px;cursor:pointer;box-shadow:0 5px 18px #0008}.node:hover{scale:1.06}.node.discovered{box-shadow:0 0 0 2px #d3a35f99,0 5px 18px #0008}.node.cleared{box-shadow:0 0 0 2px #8fbb77,0 5px 18px #0008}.settlement{border-color:#e1b86e;background:#3c2b1c}.resource{border-color:#6e9a61}.enemy{border-color:#a95c55}.ruin{border-color:#9b7dc5}.landmark{border-style:dashed}.fog{filter:grayscale(.6);opacity:.5}.panel{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}.card{border:1px solid #584a38;background:#151813;border-radius:16px;padding:14px}.legend span{display:inline-block;margin:4px 8px 4px 0;padding:5px 8px;border:1px solid #584a38;border-radius:999px;font-size:12px}.scout,.fight{border:0;border-radius:10px;padding:9px 12px;background:#d3a35f;color:#1b140e;font-weight:800;cursor:pointer;margin-right:7px}.fight{display:none;background:#a95c55;color:#fff}.fight.show{display:inline-block}.scout:disabled{opacity:.5}@media(max-width:760px){.map{min-height:760px}.node{min-width:76px;font-size:10px;padding:6px}.panel{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="top"><div><div style="opacity:.65">ERA I: EMBERS • STARTING REGION</div><h1 style="margin:3px 0">Ashfall March</h1></div><div class="nav"><a class="back hero" href="heroes.html">Heroes</a><a class="back" href="index.html">← Ashfall Hold</a></div></div>
+    <div class="status" id="status"></div>
+    <section class="map" id="map"><div class="river"></div><div class="road"></div></section>
+    <section class="panel">
+      <div class="card"><b id="title">Scout Report</b><p id="detail">Select a location. First discoveries can return useful resources to Ashfall Hold.</p><button class="scout" id="scout" disabled>Scout Selected Site</button><a class="fight" id="fight" href="camp-battle.html">Engage Hostile Force →</a></div>
+      <div class="card legend"><b>Map Key</b><br><span>🏰 Settlement</span><span>🌲 Resource</span><span>⚔ Enemy</span><span>◈ Ruin</span><span>◇ Landmark</span><p><b>Gold outline:</b> discovered. <b>Green outline:</b> hostile site cleared.</p></div>
+    </section>
+  </main>
+<script type="module">
+import {loadState,discover,prepareWorldBattle} from './state.js';
+let state=loadState(),selected=null;
+const locations=[
+{id:'home',name:'Ashfall Hold',type:'settlement',x:50,y:50,danger:0},
+{id:'grove-1',name:'Greenwake Grove',type:'resource',x:42,y:48,danger:0,reward:{timber:30}},
+{id:'field-1',name:'Lowfield',type:'resource',x:55,y:43,danger:0,reward:{food:40}},
+{id:'quarry-1',name:'Splitstone Shelf',type:'resource',x:62,y:50,danger:1,reward:{stone:25}},
+{id:'clay-1',name:'Redbank Cut',type:'resource',x:47,y:59,danger:1,reward:{clay:25}},
+{id:'iron-1',name:'Blackvein Rise',type:'resource',x:68,y:57,danger:2,reward:{iron:15}},
+{id:'enemy-1',battleId:'broken-pike-camp',name:'Broken Pike Camp',type:'enemy',x:58,y:62,danger:1},
+{id:'enemy-2',battleId:'grey-banner-patrol',name:'Grey Banner Patrol',type:'enemy',x:71,y:46,danger:2},
+{id:'ruin-1',name:'The Sunken Watch',type:'ruin',x:39,y:65,danger:1},
+{id:'ruin-2',name:'Vault of Quiet Iron',type:'ruin',x:76,y:61,danger:3},
+{id:'ruin-3',name:'Glassroot Chamber',type:'ruin',x:31,y:52,danger:2},
+{id:'major-ruin',name:'The Buried Meridian',type:'ruin',x:82,y:70,danger:4},
+{id:'landmark-1',name:'Cinder Bridge',type:'landmark',x:52,y:70,danger:1},
+{id:'landmark-2',name:'Old Crown Road',type:'landmark',x:61,y:35,danger:1},
+{id:'landmark-3',name:'Mirror Fen',type:'landmark',x:34,y:39,danger:2},
+{id:'enemy-3',name:'Ash Hound Den',type:'enemy',x:27,y:61,danger:2},
+{id:'enemy-4',name:'Riven Spear Redoubt',type:'enemy',x:85,y:43,danger:3},
+{id:'grove-2',name:'Northpine Stand',type:'resource',x:46,y:27,danger:1,reward:{timber:35}},
+{id:'field-2',name:'Hearthmere Farms',type:'resource',x:66,y:29,danger:1,reward:{food:45}},
+{id:'stone-2',name:'Whitecliff Cut',type:'resource',x:24,y:43,danger:2,reward:{stone:30}},
+{id:'clay-2',name:'Siltwater Bend',type:'resource',x:73,y:79,danger:2,reward:{clay:30}},
+{id:'iron-2',name:'Emberdeep Shaft',type:'resource',x:91,y:59,danger:4,reward:{iron:25}},
+{id:'ruin-4',name:'Silent Bell Tower',type:'ruin',x:19,y:72,danger:3},
+{id:'enemy-5',name:'Carrion Road Raiders',type:'enemy',x:57,y:84,danger:3},
+{id:'landmark-4',name:'The Pale Obelisk',type:'landmark',x:88,y:82,danger:5}
+];
+const icon={settlement:'🏰',resource:'🌲',enemy:'⚔',ruin:'◈',landmark:'◇'};const map=document.getElementById('map'),title=document.getElementById('title'),detail=document.getElementById('detail'),scout=document.getElementById('scout'),fight=document.getElementById('fight'),status=document.getElementById('status');
+function renderStatus(){state=loadState();const cleared=Object.entries(state.worldBattles).filter(([k,v])=>k!=='selected'&&v&&v.victory).length;status.innerHTML=`<span class="pill">⚔ Power <b>${state.power}</b></span><span class="pill">🪵 ${state.timber}</span><span class="pill">🪨 ${state.stone}</span><span class="pill">⛓ ${state.iron}</span><span class="pill">🧭 ${state.discovered.length}/${locations.length} discovered</span><span class="pill">🛡 ${cleared}/2 hostile sites cleared</span>`}
+function report(loc){const readiness=loc.danger===0?'Safe scouting range.':loc.danger<=2?'Suitable for an early expedition.':loc.danger<=3?'Bring trained troops and supplies.':'High-risk site. Current settlement may be underprepared.';return `${loc.type.toUpperCase()} • Danger ${loc.danger}/5. ${readiness}`}
+locations.forEach(loc=>{const battle=loc.battleId?state.worldBattles[loc.battleId]:null;const n=document.createElement('button');n.className=`node ${loc.type} ${loc.danger>=4?'fog':''} ${state.discovered.includes(loc.id)?'discovered':''} ${battle?.victory?'cleared':''}`;n.style.left=loc.x+'%';n.style.top=loc.y+'%';n.innerHTML=`${icon[loc.type]}<br><b>${loc.name}</b>`;n.onclick=()=>{state=loadState();selected={loc,node:n};title.textContent=loc.name;const updatedBattle=loc.battleId?state.worldBattles[loc.battleId]:null;detail.textContent=updatedBattle?.victory?`${loc.name} has been cleared. Ashfall patrols now control this road.`:report(loc);scout.disabled=loc.id==='home';scout.textContent=state.discovered.includes(loc.id)?'Review Site':'Scout Selected Site';fight.classList.toggle('show',Boolean(loc.battleId&&state.discovered.includes(loc.id)&&!updatedBattle?.resolved));if(loc.battleId&&updatedBattle?.resolved&&!updatedBattle.victory){fight.classList.add('show');fight.textContent='Review Defeat →'}else fight.textContent='Engage Hostile Force →'};map.appendChild(n)});
+scout.onclick=()=>{if(!selected)return;state=loadState();const {loc,node}=selected;const text=`${loc.name}: ${report(loc)}`;const first=discover(state,loc.id,text,loc.reward||{});node.classList.add('discovered');detail.textContent=first?`${text} First discovery logged${loc.reward?' and supplies were returned to Ashfall Hold.':'.'}`:`${text} This site was already known, so no duplicate reward was granted.`;scout.textContent='Review Site';if(loc.battleId&&!state.worldBattles[loc.battleId].resolved)fight.classList.add('show');renderStatus()};
+fight.onclick=(event)=>{if(!selected?.loc.battleId)return;state=loadState();if(!prepareWorldBattle(state,selected.loc.battleId)){event.preventDefault();detail.textContent='Scout this hostile site before committing troops.'}};
+renderStatus();
+</script>
+</body>
+</html>

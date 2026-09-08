@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>The Shattered Ages — Campaign Command</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;background:#0d0f12;color:#f4ead7}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,#24303b,#0b0d10 55%)}.shell{max-width:1080px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{color:#f4dfb5;text-decoration:none;border:1px solid #53606d;border-radius:999px;padding:8px 12px}.hero{margin:22px 0;padding:24px;border:1px solid #596775;border-radius:26px;background:linear-gradient(140deg,#18222dcc,#101318ee)}.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;opacity:.65}.hero h1{font-size:clamp(36px,7vw,70px);margin:7px 0}.phase{font-size:18px;font-weight:900}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}.card{border:1px solid #4b5660;border-radius:20px;background:#12171dcc;padding:16px}.meter{height:12px;background:#252d34;border-radius:99px;overflow:hidden;margin:10px 0}.meter span{display:block;height:100%;background:#c9a967}.check{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #2d363e}.check:last-child{border-bottom:0}.check b{min-width:24px}.good{color:#a8d69f}.bad{color:#e0a17d}.relic{padding:12px;border-radius:14px;background:#1a2027;border:1px solid #44515c;margin-top:8px}.unlock{margin-top:16px;padding:16px;border-radius:16px;border:1px solid #806f49;background:#282415}.locked{border-color:#5c4c4c;background:#211717}.big{font-size:28px;font-weight:900}.small{font-size:13px;opacity:.75}@media(max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main class="shell">
+<div class="top"><div><div class="eyebrow">ERA I • CAMPAIGN COMMAND</div><div style="font-weight:900">Ashfall March</div></div><div class="nav"><a href="index.html">Ashfall Hold</a><a href="world.html">World</a><a href="heroes.html">Heroes</a><a href="store.html">Founder Store</a></div></div>
+<section class="hero"><div class="eyebrow">Civilization State</div><h1 id="phaseTitle">Survival</h1><div class="phase" id="objective">Stabilize Ashfall Hold.</div><div class="meter"><span id="progressBar" style="width:0%"></span></div><div class="small" id="progressText"></div></section>
+<section class="grid"><div class="card"><div class="eyebrow">Expansion Gate</div><h2>What must be true before the next region opens?</h2><div id="requirements"></div><div id="unlock" class="unlock locked"></div></div><div class="card"><div class="eyebrow">Recovered Knowledge</div><h2>Relic Consequences</h2><div id="relics"></div><hr style="border:0;border-top:1px solid #35414b;margin:16px 0"/><div class="eyebrow">Operational Snapshot</div><p><b>Field lead:</b> <span id="heroFocus"></span></p><p><b>Settlement progress:</b> <span id="settlementProgress"></span>%</p><p><b>Road threats cleared:</b> <span id="threatsCleared"></span>/2</p><p><b>Guardian status:</b> <span id="guardian"></span></p></div></section>
+</main>
+<script type="module">
+import{loadState}from'./state.js';
+const state=loadState();
+const cleared=['broken-pike-camp','grey-banner-patrol'].filter(id=>state.worldBattles[id]?.resolved&&state.worldBattles[id]?.victory).length;
+const ruinDone=!!state.expedition.completed,guardianWon=!!state.battle.resolved&&!!state.battle.victory,lens=state.relics.includes('Meridian Lens');
+const checks=[
+  {ok:state.progress>=70,label:'Ashfall Hold stabilized to 70% or better'},
+  {ok:ruinDone,label:'Buried Meridian expedition completed'},
+  {ok:lens,label:'Meridian Lens recovered'},
+  {ok:guardianWon,label:'Meridian Guardian defeated'},
+  {ok:cleared>=2,label:'Both hostile road forces cleared'}
+];
+let phase='Survival',objective='Stabilize Ashfall Hold and expose the buried chamber.';
+if(ruinDone&&!guardianWon){phase='Discovery';objective='Break the Meridian Guardian blockade.'}
+else if(guardianWon&&(cleared<2||state.progress<70)){phase='Security';objective='Secure the Ashfall March roads and strengthen the settlement.'}
+else if(checks.every(x=>x.ok)){phase='Expansion Ready';objective='Prepare the first expedition beyond Ashfall March.'}
+const completed=checks.filter(x=>x.ok).length,percent=Math.round(completed/checks.length*100);
+document.getElementById('phaseTitle').textContent=phase;document.getElementById('objective').textContent=objective;document.getElementById('progressBar').style.width=percent+'%';document.getElementById('progressText').textContent=`${completed} of ${checks.length} expansion requirements complete • ${percent}% campaign gate`;
+document.getElementById('requirements').innerHTML=checks.map(x=>`<div class="check"><b class="${x.ok?'good':'bad'}">${x.ok?'✓':'○'}</b><span>${x.label}</span></div>`).join('');
+const unlocked=checks.every(x=>x.ok),unlock=document.getElementById('unlock');unlock.className='unlock '+(unlocked?'':'locked');unlock.innerHTML=unlocked?'<div class="eyebrow">NEXT REGION STATUS</div><div class="big">UNLOCKED</div><p>The first outward expedition can now be prepared.</p>':'<div class="eyebrow">NEXT REGION STATUS</div><div class="big">LOCKED</div><p>Finish the remaining campaign requirements. No calendar wall, no paywall.</p>';
+const relicEffects=[];if(lens)relicEffects.push('<div class="relic"><b>Meridian Lens</b><br><span class="small">+2 scouting analysis • +3 ruin insight • gateway research lead unlocked</span></div>');if(state.relics.includes('Guardian Shard'))relicEffects.push('<div class="relic"><b>Guardian Shard</b><br><span class="small">+5 regional defense analysis • +1 ruin insight</span></div>');document.getElementById('relics').innerHTML=relicEffects.length?relicEffects.join(''):'<p class="small">No major relics recovered yet.</p>';
+document.getElementById('heroFocus').textContent=state.heroFocus;document.getElementById('settlementProgress').textContent=state.progress;document.getElementById('threatsCleared').textContent=cleared;document.getElementById('guardian').textContent=guardianWon?'Defeated':state.battle.unlocked?'Active threat':'Dormant / undiscovered';
+</script></body></html>
